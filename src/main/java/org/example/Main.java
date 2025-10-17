@@ -23,7 +23,7 @@ public class Main {
         System.out.println(answer);
     }
 
-    private class InputView {
+    private static class InputView {
         private static final String SEPARATOR = " ";
 
         private static int[] read() throws IOException {
