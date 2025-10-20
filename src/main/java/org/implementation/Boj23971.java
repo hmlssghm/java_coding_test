@@ -33,7 +33,7 @@ public class Boj23971 {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        new Main().solution();
-    }
+//    public static void main(String[] args) throws Exception {
+//        new Main().solution();
+//    }
 }
