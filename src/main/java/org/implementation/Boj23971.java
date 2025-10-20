@@ -1,4 +1,4 @@
-package org.algorithm;
+package org.implementation;
 
 import org.example.Main;
 
