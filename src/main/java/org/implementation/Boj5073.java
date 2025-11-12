@@ -49,7 +49,6 @@ public class Boj5073 {
     private static class InputView {
         private static final List<Integer> END_CONDITION = Arrays.asList(0, 0, 0);
         private static List<List<Integer>> read() throws IOException {
-            // TODO: 0 0 0 입력되면 입력 종
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
             List<List<Integer>> input = new ArrayList<>();
