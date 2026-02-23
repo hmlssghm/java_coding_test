@@ -1,10 +1,10 @@
-package org.example;
+package org;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class Boj4659 {
     static char vowel1 = 'a';
     static char vowel2 = 'e';
     static char vowel3 = 'i';
