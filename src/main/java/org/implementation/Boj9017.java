@@ -1,101 +1,96 @@
 package org.implementation;
 
-import org.example.Main;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 public class Boj9017 {
     public static void main(String[] args) throws IOException {
 //        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedReader br = new BufferedReader(new FileReader("/Users/gracek/IdeaProjects/java_coding_test/src/main/java/org/input.txt"));
-        int switchCount = Integer.parseInt(br.readLine());
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
+        int T = Integer.parseInt(br.readLine()); // 테스트 케이스 개수
 
-        List<Boolean> switchList = new ArrayList<>();
-        while (st.hasMoreTokens()) {
-            // st.nextToken 변수로 안받고 직접 호출해서 저장도 전에 토큰 다 써버림. 주의!! 변수로 받을것
-            String nextToken = st.nextToken();
-            if (nextToken.equals("1")) switchList.add(true);
-            if (nextToken.equals("0")) switchList.add(false);
-        }
-
-        int studentCount = Integer.parseInt(br.readLine());
-
-        List<StudentInfo> student = new ArrayList<>();
-        for(int i = 0; i < studentCount; i++) {
-            String[] input = br.readLine().split(" ");
-            StudentInfo newLine = new StudentInfo(Integer.parseInt(input[0]), Integer.parseInt(input[1]));
-            student.add(newLine);
-        }
-
-        for(StudentInfo s: student) {
-            if(s.gender == 1) {
-                male(s.switchNum, switchList);
+        while (T-- > 0) {
+            int N = Integer.parseInt(br.readLine()); // 리더보드 등수 개수
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            List<Integer> leaderBoard = new ArrayList<>();
+            while (st.hasMoreTokens()) {
+                leaderBoard.add(Integer.parseInt(st.nextToken()));
             }
-            if(s.gender == 2) {
-                female(s.switchNum, switchList);
+
+            Set<Integer> teams = new HashSet<>(leaderBoard);
+            List<Integer> validTeams = new ArrayList<>();
+            // 6인 참가 팀 판별
+            for (int team: teams) {
+                int count = (int) leaderBoard.stream().filter(x -> x == team).count();
+                if (count == 6) {
+                    validTeams.add(team);
+                }
             }
-        }
 
-        StringBuilder sb = new StringBuilder();
-        int count = 1;
-        for (boolean b: switchList) {
-            if (b) sb.append(1);
-            if (!b) sb.append(0);
+            // 리더보드 유효하지 않은 팀 삭제
+            Iterator<Integer> it = leaderBoard.iterator();
+            while(it.hasNext()) {
+                if(!validTeams.contains(it.next())) it.remove();
+            }
 
-            if (count % 20 == 0) {
-                sb.append("\n");
+            // 팀별 점수 합산
+            List<List<Integer>> allScore = new ArrayList<>();
+            Map<Integer, Integer> fifthOfTeam = new HashMap<>();
+            for (int t: validTeams) {
+                int count = 0;
+                int score = 0;
+                for (int i = 0; i < leaderBoard.size(); i++) {
+                    if (leaderBoard.get(i) == t && count == 4) {
+                        fifthOfTeam.put(t, i + 1);
+                        break;
+                    }
+                    if (leaderBoard.get(i) == t && count < 4) {
+                        score += (i + 1);
+                        count++;
+                    }
+                }
+                allScore.add(Arrays.asList(t, score));
+            }
+
+            // 최소 점수 판별
+            int minScore = Integer.MAX_VALUE;
+            for (List<Integer> teamAndScore: allScore) {
+                if (teamAndScore.get(1) < minScore) {
+                    minScore = teamAndScore.get(1);
+                }
+            }
+
+            // 최소 점수 가진 팀 개수
+            List<Integer> candidates = new ArrayList<>();
+            for (List<Integer> teamAndScore: allScore) {
+                if (teamAndScore.get(1) == minScore) {
+                    candidates.add(teamAndScore.get(0));
+                }
+            }
+
+            if (candidates.size() >= 2) { // 동률 팀 5등 점수 비교
+                int minFifth = Integer.MAX_VALUE;
+                for (int c : candidates) {
+                    if (fifthOfTeam.get(c) < minFifth) {
+                        minFifth = fifthOfTeam.get(c);
+                    }
+                }
+
+                for (int c : candidates) {
+                    if (fifthOfTeam.get(c) == minFifth) {
+                        bw.write(String.valueOf(c));
+                    }
+                }
             } else {
-                sb.append(" ");
+                bw.write(String.valueOf(candidates.get(0)));
             }
-            count++;
+
+            bw.write("\n");
+            bw.flush(); // 테스트 케이스 하나 답 출력(한줄)
         }
-        sb.deleteCharAt(sb.length() - 1);
-        System.out.println(sb.toString());
-    }
-
-    static class StudentInfo {
-        int gender; // 1은 남자 2는 여자
-        int switchNum;
-
-        public StudentInfo(int gender, int switchNum) {
-            this.gender = gender;
-            this.switchNum = switchNum;
-        }
-    }
-
-    static void male(int switchNum, List<Boolean> switchList) {
-        // 이런 인덱스가 되는 수(switchNum)를 곱하거나 하는 상황에선 최대한 마지막에 -1 해서 원래수랑 인덱스 매칭을 해주자.
-        int idx = switchNum;
-        for (int multiply = 2; idx - 1 < switchList.size(); multiply++) {
-            switchList.set(idx - 1, !switchList.get(idx - 1));
-            idx = switchNum * multiply;
-        }
-    }
-
-    static void female(int switchNum, List<Boolean> switchList) {
-        int switchSize = switchList.size();
-        int idx = switchNum - 1;
-
-        switchList.set(idx, !switchList.get(idx));
-
-        int step = 1;
-        while(true) {
-            int leftIdx = idx - step;
-            int rightIdx = idx + step;
-            if (leftIdx < 0 || switchSize <= rightIdx) break;
-            if (switchList.get(leftIdx) != switchList.get(rightIdx)) break;
-
-            switchList.set(leftIdx, !switchList.get(leftIdx));
-            switchList.set(rightIdx, !switchList.get(rightIdx));
-
-            step++;
-        }
+        //TODO: 마지막 줄바꿈 지워야 하나?
+        bw.close();
     }
 }
